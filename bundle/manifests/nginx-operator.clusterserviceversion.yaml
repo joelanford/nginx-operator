@@ -1,0 +1,220 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "web.example.org/v1alpha1",
+          "kind": "Nginx",
+          "metadata": {
+            "name": "nginx-sample"
+          },
+          "spec": {
+            "affinity": {},
+            "autoscaling": {
+              "enabled": false,
+              "maxReplicas": 100,
+              "minReplicas": 1,
+              "targetCPUUtilizationPercentage": 80
+            },
+            "fullnameOverride": "",
+            "image": {
+              "pullPolicy": "IfNotPresent",
+              "repository": "nginx",
+              "tag": ""
+            },
+            "imagePullSecrets": [],
+            "ingress": {
+              "annotations": {},
+              "enabled": false,
+              "hosts": [
+                {
+                  "host": "chart-example.local",
+                  "paths": []
+                }
+              ],
+              "tls": []
+            },
+            "nameOverride": "",
+            "nodeSelector": {},
+            "podAnnotations": {},
+            "podSecurityContext": {},
+            "replicaCount": 1,
+            "resources": {},
+            "securityContext": {},
+            "service": {
+              "port": 80,
+              "type": "ClusterIP"
+            },
+            "serviceAccount": {
+              "annotations": {},
+              "create": true,
+              "name": ""
+            },
+            "tolerations": []
+          }
+        }
+      ]
+    capabilities: Basic Install
+    operators.operatorframework.io/builder: operator-sdk-v1.0.0+git
+    operators.operatorframework.io/project_layout: helm.sdk.operatorframework.io/v1
+  name: nginx-operator.v0.0.1
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: Nginx
+      name: nginxes.web.example.org
+      version: v1alpha1
+  description: Nginx Operator description. TODO.
+  displayName: Nginx Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - namespaces
+          verbs:
+          - get
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          verbs:
+          - '*'
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+        - apiGroups:
+          - web.example.org
+          resources:
+          - nginxes
+          - nginxes/status
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - serviceaccounts
+          - services
+          verbs:
+          - '*'
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          verbs:
+          - '*'
+        - apiGroups:
+          - authentication.k8s.io
+          resources:
+          - tokenreviews
+          verbs:
+          - create
+        - apiGroups:
+          - authorization.k8s.io
+          resources:
+          - subjectaccessreviews
+          verbs:
+          - create
+        serviceAccountName: default
+      deployments:
+      - name: nginx-operator-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                control-plane: controller-manager
+            spec:
+              containers:
+              - args:
+                - --secure-listen-address=0.0.0.0:8443
+                - --upstream=http://127.0.0.1:8080/
+                - --logtostderr=true
+                - --v=10
+                image: gcr.io/kubebuilder/kube-rbac-proxy:v0.5.0
+                name: kube-rbac-proxy
+                ports:
+                - containerPort: 8443
+                  name: https
+                resources: {}
+              - args:
+                - --metrics-addr=127.0.0.1:8080
+                - --enable-leader-election
+                - --leader-election-id=nginx-operator
+                image: quay.io/joelanford/nginx-operator:v0.1.0
+                name: manager
+                resources:
+                  limits:
+                    cpu: 100m
+                    memory: 90Mi
+                  requests:
+                    cpu: 100m
+                    memory: 60Mi
+              terminationGracePeriodSeconds: 10
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        serviceAccountName: default
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: true
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - nginx-operator
+  links:
+  - name: Nginx Operator
+    url: https://nginx-operator.domain
+  maintainers:
+  - email: your@email.com
+    name: Maintainer Name
+  maturity: alpha
+  provider:
+    name: Provider Name
+    url: https://your.domain
+  version: 0.0.1

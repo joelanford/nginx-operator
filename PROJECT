@@ -1,0 +1,8 @@
+domain: example.org
+layout: helm.sdk.operatorframework.io/v1
+projectName: nginx-operator
+resources:
+- group: web
+  kind: Nginx
+  version: v1alpha1
+version: 3-alpha
